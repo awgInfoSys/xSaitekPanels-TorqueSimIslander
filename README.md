@@ -15,6 +15,7 @@ XSaitekPanels - https://forums.x-plane.org/index.php?/files/file/14646-xsaitekpa
 After installing the above plugins, copy the configuration files as follows:
 
 xsaitekpanels.ini to X-Plane 11/Aircraft/X-Aviation/TorqueSim BN-2 Islander directory
+
 TorqueSim_BN-2B_Islander_Xsaitepanels.lua to X-Plane 11/Resources/plugins/FlyWithLua/Scripts directory
 
 
