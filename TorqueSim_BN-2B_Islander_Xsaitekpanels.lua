@@ -90,8 +90,8 @@ create_command("xsaitekpanels/sharedata/multi/alt_hold","Alt Hold Button","alt_b
 ----------------------------------------------------------------------
 --Create Switch Panel DataRefs
 ----------------------------------------------------------------------
-dataref("Engine_Starter", "afm/islander/f/switches/starter", "readonly")
-dataref("Panel_Light_Knob", "afm/islander/f/knobs/cockpitLight", "readonly")
+dataref("Engine_Starter", "afm/islander/f/switches/starter", "writeable")
+dataref("Panel_Light_Knob", "afm/islander/f/knobs/cockpitLight", "writeable")
 dataref("Panel_Light_Input", "sim/cockpit/electrical/cockpit_lights", "writable")
 ----------------------------------------------------------------------
 --Create Switch Panel Commands
@@ -215,18 +215,14 @@ create_command("awg/Islander/cmd/switches/EngR_Off", "cancel start R Engine", "s
 
 function panel_light_On()
 	if (SwitchPanelFound == 1) then
-		--if (Panel_Light_Knob < 1) then
-			Panel_Light_Input = 1.0
-		--end
+		Panel_Light_Knob = 1.0
 	end
 end
 create_command("awg/islander/cmd/switches/panelLight_On", "turn on panel lights", "panel_light_On()", "","")
 
 function panel_light_Off()
 	if (SwitchPanelFound == 1) then
-		--if (Panel_Light_Knob > 0) then
-			Panel_Light_Input = 0
-		--end
+		Panel_Light_Knob = 0
 	end
 end
 create_command("awg/islander/cmd/switches/panelLight_Off", "turn off panel lights", "panel_light_Off()", "","")
