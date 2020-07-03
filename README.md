@@ -10,6 +10,7 @@ It allows the Saitek/Logitech Switch, Multi and Radio Panels to be used to contr
 These configuration files require the following X-Plane 11 plugins:
 
 FlyWithLua - https://forums.x-plane.org/index.php?/files/file/38445-flywithlua-ng-next-generation-edition-for-x-plane-11-win-lin-mac/
+
 XSaitekPanels - https://forums.x-plane.org/index.php?/files/file/14646-xsaitekpanels-linwinmac3264/
 
 After installing the above plugins, copy the configuration files as follows:
