@@ -174,7 +174,7 @@ function start_Engine_L_On()
 		end
 	end
 end
-create_command("awg/Islander/cmd/switches/EngL_On", "start L Engine", "start_Engine_L_On()", "", "")
+create_command("awg/islander/cmd/switches/EngL_On", "start L Engine", "start_Engine_L_On()", "", "")
 
 function start_Engine_L_Off()
 	if (SwitchPanelFound == 1) then
@@ -185,7 +185,7 @@ function start_Engine_L_Off()
 		end
 	end
 end
-create_command("awg/Islander/cmd/switches/EngL_Off", "cancel start L Engine", "start_Engine_L_Off()", "", "")
+create_command("awg/islander/cmd/switches/EngL_Off", "cancel start L Engine", "start_Engine_L_Off()", "", "")
 
 function start_Engine_R_On()
 	if (SwitchPanelFound == 1) then
@@ -196,7 +196,7 @@ function start_Engine_R_On()
 		end
 	end
 end
-create_command("awg/Islander/cmd/switches/EngR_On", "start R Engine", "start_Engine_R_On()", "", "")
+create_command("awg/islander/cmd/switches/EngR_On", "start R Engine", "start_Engine_R_On()", "", "")
 
 function start_Engine_R_Off()
 	if (SwitchPanelFound == 1) then
@@ -207,7 +207,7 @@ function start_Engine_R_Off()
 		end
 	end
 end
-create_command("awg/Islander/cmd/switches/EngR_Off", "cancel start R Engine", "start_Engine_R_Off()", "start_Engine_R_Off()", "", "")
+create_command("awg/islander/cmd/switches/EngR_Off", "cancel start R Engine", "start_Engine_R_Off()", "start_Engine_R_Off()", "", "")
 
 ----------------------------------------------------------------------
 --	Panel Light Knob - not working
