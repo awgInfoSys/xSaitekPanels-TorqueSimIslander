@@ -1,13 +1,13 @@
 ----------------------------------------------------------------------
 -- Script for Xsaitekpanels with TorqueSim BN-2B Islander
--- Version: 1.0
--- Build:   24 Jun-2020
+-- Version: 1.01
+-- Build:   4-Jul-2020
 -- By: Andrew Gransden
 ----------------------------------------------------------------------
 --Function prevents script from running with G1000 C172
 ----------------------------------------------------------------------
 if (AIRCRAFT_FILENAME == "BN-2B Islander.acf") then
-logMsg ( "FlyWithLua Info: ** Found plane TorqueSim BN-2B Islander **  " .. PLANE_ICAO )
+logMsg ( "FlyWithLua Info: ** Found plane TorqueSim BN-2B Islander ** ICAO " .. PLANE_ICAO .. " **" )
 ----------------------------------------------------------------------
 --Import & Create DataRefs and Functions
 ----------------------------------------------------------------------
@@ -42,6 +42,8 @@ DataRef("Panel_Lights","sim/cockpit/electrical/instrument_brightness","writable"
 ----------------------------------------------------------------------
 DataRef("Pitot_Heat_On","sim/cockpit/switches/pitot_heat_on","writable")
 ----------------------------------------------------------------------
+
+----------------------------------------------------------------------
 --Create Multi Panel Light DataRefs
 ----------------------------------------------------------------------
 define_shared_DataRef("xsaitekpanels/sharedata/multi_hdg_light", "Int")
@@ -68,15 +70,16 @@ dataref("multi_ap_light", "xsaitekpanels/sharedata/multi_ap_light", "writable")
 ----------------------------------------------------------------------
 dataref("Autopilot_Hdg_Status", "sim/cockpit2/autopilot/heading_status", "readonly")
 dataref("Autopilot_Nav_Status", "sim/cockpit2/autopilot/nav_status", "readonly")
-dataref("Autopilot_IAS_Status", "sim/cockpit2/autopilot/gpss_status", "readonly")
+-- ***** IAS used to indicate ALT Armed status *****
+dataref("Autopilot_IAS_Status", "sim/cockpit2/autopilot/altitude_hold_armed", "readonly")
 dataref("Autopilot_Alt_Status", "sim/cockpit2/autopilot/altitude_mode", "readonly")
 dataref("Autopilot_VS_Status", "sim/cockpit2/autopilot/vvi_status", "readonly")
 dataref("Autopilot_Apr_Status", "sim/cockpit2/autopilot/approach_status", "readonly")
 dataref("Autopilot_Rev_Status", "sim/cockpit2/autopilot/backcourse_status", "readonly")
 dataref("Autopilot_Test_Status", "sim/cockpit/warnings/autopilot_test_ap_lit", "writeable")
-dataref("Autopilot_Fail", "sim/operation/failures/rel_otto", "writeable")
+dataref("Autopilot_Fail", "sim/cockpit2/autopilot/otto_ready", "writeable")
 dataref("Autopilot_Glideslope_Status", "sim/cockpit2/autopilot/glideslope_status", "readonly")
-dataref("Autopilot_Servos_On", "sim/cockpit2/autopilot/servos_on", "readonly")
+dataref("Autopilot_On", "sim/cockpit2/autopilot/autopilot_on", "readonly")
 vvi_fpm = dataref_table("sim/cockpit/autopilot/vertical_velocity")
 --sim/cockpit2/autopilot/glideslope_status 1 or 2
 ----------------------------------------------------------------------
@@ -210,7 +213,7 @@ end
 create_command("awg/islander/cmd/switches/EngR_Off", "cancel start R Engine", "start_Engine_R_Off()", "start_Engine_R_Off()", "", "")
 
 ----------------------------------------------------------------------
---	Panel Light Knob - not working
+--	Panel Light Knob
 ----------------------------------------------------------------------
 
 function panel_light_On()
@@ -255,11 +258,11 @@ create_command("awg/islander/cmd/pitch_trim_down", "pitch trim down", "trim_down
 function hdg_button_pressed()
 		if (MultiPanelFound == 1) then
 			if (MULTI_HDG_BTN == 0) then
-			command_once("sim/autopilot/NAV")
+				command_once("sim/autopilot/NAV")
 			elseif (MULTI_HDG_BTN == 1) then
-			command_once("sim/autopilot/hdg_nav")
+				command_once("sim/autopilot/hdg_nav")
 			else 
-			command_once("sim/autopilot/NAV")
+				command_once("sim/autopilot/NAV")
 			end
 		end
 end
@@ -269,11 +272,11 @@ end
 function nav_button_pressed()
 		if (MultiPanelFound == 1) then
 			if (MULTI_NAV_BTN == 0) then
-			command_once("sim/autopilot/heading")
+				command_once("sim/autopilot/heading")
 			elseif (MULTI_NAV_BTN == 1) then
-			command_once("sim/autopilot/hdg_nav")
+				command_once("sim/autopilot/hdg_nav")
 			else 
-			command_once("sim/autopilot/heading")
+				command_once("sim/autopilot/heading")
 			end
 		end
 end
@@ -282,7 +285,7 @@ end
 ----------------------------------------------------------------------
 function alt_button_pressed()
 		if (MultiPanelFound == 1) then
-			--vvi_fpm[0] = 0
+			vvi_fpm[0] = 0
 			command_once("sim/autopilot/altitude_hold")
 		end
 end
@@ -291,110 +294,123 @@ end
 --	Multi Panel Lights
 ----------------------------------------------------------------------
 function autopilot_light()
+		
 	if (MultiPanelFound == 1) then
 ----------------------------------------------------------------------
 --		HDG Light
 ----------------------------------------------------------------------
-		if (Autopilot_Fail == 6) then
+		if (Autopilot_Fail == 1) then
 			multi_hdg_light = 0		
 		elseif (Autopilot_Test_Status == 1) then
-			multi_hdg_light = 2		
-		elseif (Autopilot_Hdg_Status == 2) and (Autopilot_Servos_On == 1) then
-			multi_hdg_light = 2
-		else multi_hdg_light = 0	
+			multi_hdg_light = 1		
+		elseif (Autopilot_Hdg_Status == 2) and (Autopilot_On == 1) then
+			multi_hdg_light = 1
+		else 
+			multi_hdg_light = 0	
 		end
 ----------------------------------------------------------------------
 --		NAV Light
 ----------------------------------------------------------------------
-		if (Autopilot_Fail == 6) then
+		if (Autopilot_Fail == 1) then
 			multi_nav_light = 0
 		elseif (Autopilot_Test_Status == 1) then
-			multi_nav_light = 2		
-		elseif (Autopilot_Nav_Status == 1) and (Autopilot_Servos_On == 1) then
-			multi_nav_light = 2	
-		elseif (Autopilot_Nav_Status == 2) and (Autopilot_Servos_On == 1) then
-			multi_nav_light = 2			
-		elseif (Autopilot_IAS_Status == 2) and (Autopilot_Servos_On == 1) then
-			multi_nav_light = 2
-		else multi_nav_light = 0
-			
+			multi_nav_light = 1		
+		elseif (Autopilot_Apr_Status == 1) and (Autopilot_On == 1) then
+			multi_nav_light = 0
+		elseif (Autopilot_Nav_Status == 1) and (Autopilot_On == 1) then
+			multi_nav_light = 1	
+		elseif (Autopilot_Nav_Status == 2) and (Autopilot_On == 1) then
+			multi_nav_light = 1			
+		elseif (Autopilot_IAS_Status == 2) and (Autopilot_On == 1) then
+			multi_nav_light = 1
+		else 
+			multi_nav_light = 0	
 		end
 ----------------------------------------------------------------------
---		IAS Light
+--		IAS Light ***** Indicates ALT Armed *****
 ----------------------------------------------------------------------
-		if (Autopilot_Fail == 6) then
+		if (Autopilot_Fail == 1) then
 			multi_ias_light = 0
 		elseif (Autopilot_Test_Status == 1) then
-			multi_ias_light = 2		
-		elseif (Autopilot_IAS_Status == 1) and (Autopilot_Servos_On == 1) then
-			multi_ias_light = 2			
-		elseif (Autopilot_IAS_Status == 2) and (Autopilot_Servos_On == 1) then
-			multi_ias_light = 2
-		else multi_ias_light = 0	
+			multi_ias_light = 1		
+		elseif (Autopilot_IAS_Status == 1) and (Autopilot_On == 1) then
+			multi_ias_light = 1			
+		elseif (Autopilot_IAS_Status == 2) and (Autopilot_On == 1) then
+			multi_ias_light = 1
+		else 
+			multi_ias_light = 0	
 		end
 ----------------------------------------------------------------------
 --		ALT Light
 ----------------------------------------------------------------------
-		if (Autopilot_Fail == 6) then
+		if (Autopilot_Fail == 1) then
 			multi_alt_light = 0
 		elseif (Autopilot_Test_Status == 1) then
-			multi_alt_light = 2	
-		elseif (Autopilot_Glideslope_Status == 1) and (Autopilot_Servos_On == 1) then 	
+			multi_alt_light = 1	
+		elseif (Autopilot_Glideslope_Status == 1) and (Autopilot__On == 1) then 	
 			multi_alt_light = 1
-		elseif (Autopilot_Glideslope_Status == 2) and (Autopilot_Servos_On == 1) then 	
+		elseif (Autopilot_Glideslope_Status == 2) and (Autopilot_On == 1) then 	
 			multi_alt_light = 1		
-		elseif (Autopilot_Alt_Status == 6) and (Autopilot_Servos_On == 1) then
-			multi_alt_light = 2
-		else multi_alt_light = 0
+		elseif (Autopilot_Alt_Status == 6) and (Autopilot_On == 1) then
+			multi_alt_light = 1
+		else 
+			multi_alt_light = 0
 		end
 ----------------------------------------------------------------------
 --		VS Light & VS display clear function
 ----------------------------------------------------------------------
-		if (Autopilot_Fail == 6) then
+		if (Autopilot_Fail == 1) then
 			multi_vs_light = 0
 			vvi_fpm[0] = 0
 		elseif (Autopilot_Test_Status == 1) then
-			multi_vs_light = 2
+			multi_vs_light = 1
 			vvi_fpm[0] = 0			
-		elseif (Autopilot_VS_Status == 2) and (Autopilot_Servos_On == 1) then
-			multi_vs_light = 2
+		elseif (Autopilot_VS_Status == 2) and (Autopilot_On == 1) then
+			multi_vs_light = 1
 		else multi_vs_light = 0	
 			vvi_fpm[0] = 0
 		end
 ----------------------------------------------------------------------
 --		APR Light
 ----------------------------------------------------------------------
-		if (Autopilot_Fail == 6) then
+		if (Autopilot_Fail == 1) then
 			multi_apr_light = 0
 		elseif (Autopilot_Test_Status == 1) then
-			multi_apr_light = 2
-		elseif (Autopilot_Apr_Status == 1) and (Autopilot_Servos_On == 1) then
-			multi_apr_light = 2
-		elseif (Autopilot_Apr_Status == 2) and (Autopilot_Servos_On == 1) then
-			multi_apr_light = 2
-		else multi_apr_light = 0	
+			multi_apr_light = 1
+		elseif (Autopilot_IAS_status == 1) then -- ALT Armed
+			multi_apr_light = 0
+		elseif (Autopilot_Apr_Status == 1) and (Autopilot_On == 1) then
+			multi_apr_light = 1
+		elseif (Autopilot_Apr_Status == 2) and (Autopilot_On == 1) then
+			multi_apr_light = 1
+		else 
+			multi_apr_light = 0	
 		end
 ----------------------------------------------------------------------
 --		REV Light
 ----------------------------------------------------------------------
-		if (Autopilot_Fail == 6) then
+		if (Autopilot_Fail == 1) then
 			multi_rev_light = 0
 		elseif (Autopilot_Test_Status == 1) then
-			multi_rev_light = 2
-		elseif (Autopilot_Rev_Status == 1) and (Autopilot_Servos_On == 1) then
-			multi_rev_light = 2
-		elseif (Autopilot_Rev_Status == 2) and (Autopilot_Servos_On == 1) then
-			multi_rev_light = 2
-		else multi_rev_light = 0	
+			multi_rev_light = 1
+		elseif (Autopilot_Rev_Status == 1) and (Autopilot_On == 1) then
+			multi_rev_light = 1
+		elseif (Autopilot_Rev_Status == 2) and (Autopilot_On == 1) then
+			multi_rev_light = 1
+		else 
+			multi_rev_light = 0	
 		end
 ----------------------------------------------------------------------
 --	AP Light
 ----------------------------------------------------------------------
-		if (Autopilot_Fail == 6) then
-			multi_ap_light = 2
+		if (Autopilot_Fail == 1) then
+			multi_ap_light = 0
 		elseif (Autopilot_Test_Status == 1) then
-			multi_ap_light = 2
-		else multi_ap_light = 0
+			multi_ap_light = 1
+		elseif (Autopilot_On == 1) then
+			multi_ap_light = 1
+		else 
+			multi_ap_light = 0
 		end
 ----------------------------------------------------------------------
 	end
@@ -407,13 +423,13 @@ end
 --		Pitot Heat ON
 ----------------------------------------------------------------------
 function pitot_heat_on()
-			Pitot_Heat_On = 1
+	Pitot_Heat_On = 1
 end
 ----------------------------------------------------------------------
 --		Pitot Heat OFF
 ----------------------------------------------------------------------
 function pitot_heat_off()
-			Pitot_Heat_On = 0
+	Pitot_Heat_On = 0
 end
 ----------------------------------------------------------------------
 --	Vertical Speed Functions
@@ -421,17 +437,17 @@ end
 --		Vertical Speed Up
 ----------------------------------------------------------------------
 function vs_up()
-		if multi_vs_light == 2 then
+	if multi_vs_light == 2 then
 		command_once("sim/autopilot/vertical_speed_up")
-		end
+	end
 end
 ----------------------------------------------------------------------
 --		Vertical Speed Down
 ----------------------------------------------------------------------
 function vs_down()
-		if multi_vs_light == 2 then
+	if multi_vs_light == 2 then
 		command_once("sim/autopilot/vertical_speed_down")
-		end
+	end
 end
 ----------------------------------------------------------------------
 
